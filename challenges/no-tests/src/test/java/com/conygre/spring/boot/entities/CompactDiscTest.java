@@ -56,6 +56,8 @@ class CompactDiscTest {
     @Test
     @DisplayName("all getters/setters round-trip the values passed to them")
     void gettersAndSetters_roundTrip() {
+        // Baseline check that every getter returns exactly what its matching
+        // setter was given, including the trackTitles association.
         CompactDisc disc = new CompactDisc();
         disc.setId(7);
         disc.setTitle("White Ladder");

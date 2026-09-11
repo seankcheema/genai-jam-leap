@@ -47,6 +47,8 @@ class CompactDiscRepositoryTest {
     @Test
     @DisplayName("save() on a disc with id 0 persists it and generates a positive id (IDENTITY strategy)")
     void save_newDisc_generatesPositiveId() {
+        // Baseline check against a real JPA provider: saving a transient
+        // entity (id 0) triggers IDENTITY generation rather than reusing 0.
         CompactDisc disc = new CompactDisc("Is This It", 13.99, "The Strokes", 11);
         // id defaults to 0 (primitive int, never set)
 
@@ -70,6 +72,7 @@ class CompactDiscRepositoryTest {
     @Test
     @DisplayName("findById() returns the saved entity for a known id")
     void findById_knownId_returnsEntity() {
+        // Baseline happy-path check, complementing the unknown-id test above.
         CompactDisc disc = new CompactDisc("Parachutes", 11.99, "Coldplay", 10);
         CompactDisc saved = repository.save(disc);
 
@@ -103,6 +106,8 @@ class CompactDiscRepositoryTest {
     @Test
     @DisplayName("findByArtist() returns only the discs matching that exact artist")
     void findByArtist_matchingArtist_returnsOnlyThoseDiscs() {
+        // Baseline happy-path check that the derived query method filters
+        // correctly and doesn't pull in rows for other artists.
         repository.save(new CompactDisc("Is This It", 13.99, "The Strokes", 11));
         repository.save(new CompactDisc("Room On Fire", 12.99, "The Strokes", 11));
         repository.save(new CompactDisc("Parachutes", 11.99, "Coldplay", 10));
@@ -154,6 +159,8 @@ class CompactDiscRepositoryTest {
     @Test
     @DisplayName("delete() removes the row so a subsequent findById() is empty")
     void delete_removesEntity() {
+        // Baseline check that delete() actually removes the row rather than
+        // just detaching it - a subsequent findById() must come back empty.
         CompactDisc saved = repository.save(new CompactDisc("Mezzanine", 12.99, "Massive Attack", 11));
         int id = saved.getId();
 

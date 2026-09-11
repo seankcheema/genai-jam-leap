@@ -68,6 +68,8 @@ class CompactDiscControllerTest {
     @Test
     @DisplayName("GET /api/compactdiscs returns 200 with the full catalog as a JSON array")
     void findAll_returnsCatalogAsJsonArray() throws Exception {
+        // Baseline happy-path check: the catalog the (mocked) service
+        // returns is serialised to a JSON array with the expected fields.
         CompactDisc cd1 = sampleDisc(9);
         CompactDisc cd2 = new CompactDisc("Parachutes", 11.99, "Coldplay", 10);
         cd2.setId(11);
@@ -102,6 +104,7 @@ class CompactDiscControllerTest {
     @Test
     @DisplayName("GET /api/compactdiscs/{id} returns 200 with the disc JSON when found")
     void getCdById_whenFound_returnsDiscJson() throws Exception {
+        // Baseline happy-path check for the non-404 lookup endpoint.
         when(service.getCompactDiscById(9)).thenReturn(sampleDisc(9));
 
         mockMvc.perform(get(BASE_URL + "/9"))
@@ -137,6 +140,7 @@ class CompactDiscControllerTest {
     @Test
     @DisplayName("GET /api/compactdiscs/404/{id} returns 200 with the disc JSON when found")
     void getByIdWith404_whenFound_returns200AndDisc() throws Exception {
+        // Baseline happy-path check for the dedicated /404/{id} endpoint.
         when(service.getCompactDiscById(11)).thenReturn(sampleDisc(11));
 
         mockMvc.perform(get(BASE_URL + "/404/11"))
@@ -166,6 +170,8 @@ class CompactDiscControllerTest {
     @Test
     @DisplayName("POST /api/compactdiscs with a valid body returns 200 and forwards the deserialised disc to the service")
     void addCd_withValidBody_forwardsDeserialisedDiscToService() throws Exception {
+        // Baseline happy-path check: a complete JSON body is deserialised
+        // correctly and passed through to the service unchanged.
         CompactDisc requestDisc = new CompactDisc("Mezzanine", 12.99, "Massive Attack", 11);
 
         mockMvc.perform(post(BASE_URL)
@@ -229,6 +235,8 @@ class CompactDiscControllerTest {
     @Test
     @DisplayName("DELETE /api/compactdiscs/{id} returns 200 when the service deletes successfully")
     void deleteCdById_whenFound_returns200() throws Exception {
+        // Baseline happy-path check: a successful delete returns 200 and the
+        // id from the path is forwarded to the service unchanged.
         doNothing().when(service).deleteCompactDisc(9);
 
         mockMvc.perform(delete(BASE_URL + "/9"))
@@ -276,6 +284,8 @@ class CompactDiscControllerTest {
     @Test
     @DisplayName("DELETE /api/compactdiscs with a JSON body returns 200 and forwards the deserialised disc to the service")
     void deleteCdByBody_returns200AndForwardsDisc() throws Exception {
+        // Baseline happy-path check for the alternate "delete by request
+        // body" overload, mirroring the delete-by-id test above.
         CompactDisc discToDelete = sampleDisc(16);
 
         mockMvc.perform(delete(BASE_URL)

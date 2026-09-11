@@ -99,6 +99,8 @@ class CompactDiscServiceImplTest {
     @Test
     @DisplayName("getCompactDiscById() returns the disc when the repository finds it")
     void getCompactDiscById_whenPresent_returnsDisc() {
+        // Baseline happy-path check: a repository hit is unwrapped from its
+        // Optional and returned as-is.
         CompactDisc cd = new CompactDisc("Mezzanine", 12.99, "Massive Attack", 11);
         cd.setId(15);
         when(repository.findById(15)).thenReturn(Optional.of(cd));
@@ -224,6 +226,8 @@ class CompactDiscServiceImplTest {
     @Test
     @DisplayName("deleteCompactDisc(id) looks the entity up then deletes that exact entity")
     void deleteCompactDiscById_whenFound_deletesTheResolvedEntity() {
+        // Baseline happy-path check: the int overload resolves the id to an
+        // entity via findById() and passes that exact entity to delete().
         CompactDisc disc = new CompactDisc("Greatest Hits", 14.99, "Penelope", 14);
         disc.setId(13);
         when(repository.findById(13)).thenReturn(Optional.of(disc));

@@ -18,6 +18,8 @@ class TrackTest {
     @Test
     @DisplayName("the 3-arg constructor sets id, title and cdId")
     void fullConstructor_setsAllFields() {
+        // Baseline check that the 3-arg constructor maps each parameter to
+        // the correct field (id, title, cdId, in that declared order).
         Track track = new Track(1, "Mama", 16);
 
         assertEquals(1, track.getId());
@@ -48,6 +50,7 @@ class TrackTest {
     @Test
     @DisplayName("the no-arg constructor leaves every field at its Java default")
     void defaultConstructor_allFieldsAtJavaDefaults() {
+        // Baseline check of the no-arg constructor's initial state.
         Track track = new Track();
 
         assertNull(track.getId());
@@ -58,6 +61,8 @@ class TrackTest {
     @Test
     @DisplayName("getters/setters round-trip correctly, including id going from null to a real value")
     void gettersAndSetters_roundTrip() {
+        // Baseline check that every getter returns exactly what its matching
+        // setter was given.
         Track track = new Track();
         track.setId(5);
         track.setTitle("Spice Up Your Life");
