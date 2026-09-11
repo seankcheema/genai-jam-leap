@@ -5,7 +5,11 @@
 // is accessed by the pages
 
 package com.conygre.spring.boot.entities;
-import javax.persistence.*;
+
+// UPGRADE (Spring Boot 2.5 -> 3.5): javax.persistence.* -> jakarta.persistence.*
+// Same reason as entities/CompactDisc.java - Spring Boot 3.x/Hibernate 6.x only provide the
+// jakarta.persistence annotations, not the old javax.persistence ones.
+import jakarta.persistence.*;
 
 
 import java.io.Serializable;

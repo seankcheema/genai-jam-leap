@@ -2,7 +2,15 @@ package com.conygre.spring.boot.rest;
 
 import com.conygre.spring.boot.services.CompactDiscService;
 import com.conygre.spring.boot.entities.CompactDisc;
-import io.swagger.annotations.ApiOperation;
+// UPGRADE (Springfox -> springdoc-openapi): the old io.swagger.annotations.ApiOperation
+// annotation comes from Swagger/OpenAPI 2.x annotations (io.swagger:swagger-annotations),
+// which was only ever a transitive dependency of Springfox. springdoc-openapi is built on
+// the OpenAPI 3 annotation set (io.swagger.core.v3:swagger-annotations-jakarta), whose
+// equivalent annotation is io.swagger.v3.oas.annotations.Operation, using "summary" instead
+// of "value" and "operationId" instead of "nickname". Everything else about the endpoint
+// (path, HTTP method, return type) is picked up automatically by springdoc from the
+// existing @RequestMapping/@RestController annotations - no other config is required.
+import io.swagger.v3.oas.annotations.Operation;
 //import org.apache.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -23,7 +31,7 @@ public class CompactDiscController {
 	@Autowired
 	private CompactDiscService service;
 
-	@ApiOperation(value = "findAll", nickname = "findAll")
+	@Operation(summary = "findAll", operationId = "findAll")
 	@RequestMapping(method = RequestMethod.GET)
 	public Iterable<CompactDisc> findAll() {
 		logger.info("managed to call a Get request for findAll");

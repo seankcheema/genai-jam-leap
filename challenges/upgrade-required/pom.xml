@@ -4,22 +4,45 @@
 	<groupId>com.conygre.spring.boot.data</groupId>
 	<artifactId>CompactDiscRestDataBoot</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+	<!--
+		UPGRADE NOTE (2021 -> 2026 upgrade):
+		- java.version bumped from 11 to 25. Spring Boot 3.x requires Java 17 as an absolute
+		  minimum (Spring Framework 6 / Jakarta EE 9+ baseline). Java 25 (the newest LTS
+		  release, Sept 2025) was chosen instead of the more conservative Java 21 LTS because
+		  Spring Boot 3.5.x's own published system-requirements explicitly list it as
+		  supported ("Spring Boot 3.5.16 requires at least Java 17 and is compatible with
+		  versions up to and including Java 25"), and Java 25 is what is installed on this
+		  build machine. Setting this property makes Maven compile using a "release 25" target
+		  and also drives the spring-boot-maven-plugin's repackaged JAR metadata.
+		- spring-boot-starter-parent bumped from 2.5.3 to 3.5.16, the latest stable release
+		  on the Spring Boot 3.x line (Spring Boot 4.0 already exists upstream, but the task
+		  asked for the latest stable 3.x, which is the safer/expected jump from a 2.5.x app).
+	-->
 	<properties>
-		<java.version>11</java.version>
+		<java.version>25</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<start-class>com.conygre.spring.boot.AppConfig</start-class>
 	</properties>
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.5.3</version>
+		<version>3.5.16</version>
 	</parent>
 
 	<dependencies>
+		<!--
+			MySQL renamed its JDBC driver's Maven coordinates: the old "mysql:mysql-connector-java"
+			artifact is superseded by "com.mysql:mysql-connector-j". The explicit <version> is
+			intentionally omitted so that the version managed by the spring-boot-dependencies BOM
+			(9.7.0 under Spring Boot 3.5.16) is used, rather than pinning a version by hand.
+			Marked as "runtime" scope since the driver class is only ever loaded reflectively by
+			the JDBC/DataSource layer and application code never references it at compile time
+			(this matches what Spring Initializr generates for Spring Boot 3.x projects).
+		-->
 		<dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
-			<version>8.0.22</version>
+			<groupId>com.mysql</groupId>
+			<artifactId>mysql-connector-j</artifactId>
+			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -40,11 +63,17 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<!--
+			H2 version pin (1.4.200) removed: that version predates the Hibernate 6.x
+			bundled with Spring Boot 3.5 and is known to trip up on newer Hibernate SQL
+			generation. Letting the spring-boot-dependencies BOM manage it instead
+			(2.3.232 under Spring Boot 3.5.16) keeps it in lock-step with the rest of
+			the JPA/Hibernate stack.
+		-->
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
 			<scope>test</scope>
-			<version>1.4.200</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -52,37 +81,48 @@
 		</dependency>
 
 
-		<!-- Swagger support -->
-		 <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger-ui</artifactId>
-            <version>2.9.2</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger2</artifactId>
-            <version>2.9.2</version>
-            <scope>compile</scope>
-        </dependency>
-		<!-- had to add a specific version for mock() and @MockObject to work -->
+		<!--
+			Swagger support: Springfox (io.springfox:springfox-swagger-ui / springfox-swagger2
+			2.9.2) has been REMOVED and replaced with springdoc-openapi.
+
+			Why: Springfox has been unmaintained since ~2020 (last release 3.0.0 in 2020) and
+			it directly reflects on internal Spring MVC path-matching classes to build its API
+			model. Spring Framework 5.3.16 (pulled in transitively by Spring Boot 2.6.x+) changed
+			the default MVC path-matching strategy from AntPathMatcher to PathPatternParser,
+			which Springfox's reflection-based introspection does not understand. The result is a
+			hard startup failure ("Failed to start bean 'documentationPluginsBootstrapper';
+			nested exception is java.lang.NullPointerException") on anything newer than Spring
+			Boot 2.5.x/2.6 with the fix disabled, and Springfox 2.9.2/3.0.0 were never updated to
+			support Jakarta EE 9+ (javax.* -> jakarta.*) at all, so it cannot even compile against
+			Spring Boot 3.x's jakarta.servlet APIs. There is no newer Springfox release to move to.
+
+			springdoc-openapi is the actively maintained replacement: it generates the OpenAPI 3
+			spec and Swagger UI directly from Spring's own MVC metadata (no reflection into
+			internal path-matching classes) and only needs one starter dependency - unlike
+			Springfox's Docket/@EnableSwagger2 API, it needs (in the common case) zero manual
+			@Bean configuration, so SwaggerConfig.java was rewritten to a small optional
+			OpenAPI @Bean purely for the title/description/contact metadata that the old Docket
+			bean used to provide (see SwaggerConfig.java for details). The UI is served at
+			/swagger-ui.html once this starter is on the classpath.
+		-->
 		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-core</artifactId>
-			<version>2.22.0</version>
-			<scope>test</scope>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			<version>2.8.13</version>
 		</dependency>
-		<dependency>
-			<groupId>org.junit.vintage</groupId>
-			<artifactId>junit-vintage-engine</artifactId>
-			<scope>test</scope>
-			<exclusions>
-				<exclusion>
-					<groupId>org.hamcrest</groupId>
-					<artifactId>hamcrest-core</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
+		<!--
+			mockito-core version pin (2.22.0) removed. That pin dates from 2021 and predates
+			Java modules-friendly Mockito releases; spring-boot-starter-test already brings in
+			a Mockito version (5.x) that is managed by, and kept compatible with, the
+			spring-boot-dependencies BOM, so an explicit/older override is both unnecessary and
+			would fight the BOM. There is also no src/test directory in this project at all
+			(confirmed by inspecting src/), so there is nothing currently exercising Mockito.
+
+			junit-vintage-engine (JUnit 4 support) removed entirely: there are no test sources
+			in this project (no src/test/java directory exists), so nothing needs JUnit 3/4
+			support, and spring-boot-starter-test already brings JUnit 5 (Jupiter) for any
+			future tests.
+		-->
 	</dependencies>
 
 	<build>

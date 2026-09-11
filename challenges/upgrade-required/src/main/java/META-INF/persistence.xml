@@ -1,4 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+	NOTE (checked as part of the Java 25 / Spring Boot 3.5 upgrade, left untouched):
+	This file is vestigial and is not actually used at runtime. It lives under
+	src/main/java/META-INF/ rather than src/main/resources/META-INF/, and Maven's default build
+	only copies files from src/main/resources onto the classpath - so this persistence.xml never
+	ends up in target/classes/META-INF and is never seen by any JPA provider. Nothing in the
+	source (AppConfig/entities/repos) references its persistence-unit name ("NewPersistenceUnit")
+	either. Spring Data JPA's auto-configuration builds its EntityManagerFactory directly from
+	the spring.datasource.* properties in application.properties instead, so no persistence.xml
+	is required for this app to work. Left in place unmodified since removing it is outside the
+	scope of the version upgrade, but documenting it here so it isn't mistaken for live config.
+-->
 <persistence xmlns="http://java.sun.com/xml/ns/persistence" version="2.0">
 
     <persistence-unit name="NewPersistenceUnit">

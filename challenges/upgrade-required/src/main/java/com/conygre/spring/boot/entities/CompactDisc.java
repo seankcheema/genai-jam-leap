@@ -6,7 +6,13 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.*;
+// UPGRADE (Spring Boot 2.5 -> 3.5): javax.persistence.* -> jakarta.persistence.*
+// Spring Boot 3.x moved off the "javax.*" Java EE namespace entirely and onto Jakarta EE 9+'s
+// "jakarta.*" namespace (the Eclipse Foundation renamed the packages when it took over the
+// specs from Oracle). Hibernate/Spring Data JPA under Spring Boot 3 only ship the jakarta.*
+// variants of the JPA annotations, so any entity still importing javax.persistence.* simply
+// fails to compile ("package javax.persistence does not exist") once the parent POM is bumped.
+import jakarta.persistence.*;
 
 
 // add an annotations specifying the table that this will map to
